@@ -83,7 +83,7 @@ return new class extends Migration {
         });
     }
 
-    /**
+    /**9
      * Reverse the migrations.
      */
     public function down(): void
