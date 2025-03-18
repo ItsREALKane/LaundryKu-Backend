@@ -15,21 +15,35 @@ class PesananController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'id_user' => 'required|exists:users,id',
-            'id_laundry' => 'required|exists:laundry,id',
-            'tanggal_pesanan' => 'required|date',
-            'status' => 'required|string',
-            'total_harga' => 'required|numeric',
-            'alamat' => 'required|string',
-            'waktu_ambil' => 'required',
-            'catatan' => 'nullable|string',
-        ]);
+        try {
+            $request->validate([
+                'id_user' => 'required|exists:users,id',
+                'id_laundry' => 'required|exists:laundry,id',
+                'tanggal_pesanan' => 'required|date',
+                'status' => 'required|string',
+                'total_harga' => 'required|numeric',
+                'alamat' => 'required|string',
+                'waktu_ambil' => 'required',
+                'catatan' => 'nullable|string',
+                'jenis_pembayaran' => 'required|in:sekali,langganan',
+                'tgl_langganan_berakhir' => 'nullable|date|required_if:jenis_pembayaran,langganan',
+            ]);
 
-        $pesanan = Pesanan::create($request->all());
-
-        return response()->json($pesanan, 201);
+            $pesanan = Pesanan::create($request->all());
+            return response()->json([
+                'status' => true,
+                'message' => 'Data pesanan berhasil ditampilkan',
+                'data' => $pesanan
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Error terjadi',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function show($id)
     {

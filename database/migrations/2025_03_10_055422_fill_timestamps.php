@@ -16,6 +16,11 @@ return new class extends Migration {
         Schema::table('person', function (Blueprint $table) {
             $table->string('phone')->nullable(); // Tambah kolom phone
         });
+
+        Schema::table('pesanan', function (Blueprint $table) {
+            $table->enum('jenis_pembayaran', ['sekali', 'langganan'])->after('total_harga');
+            $table->date('tgl_langganan_berakhir')->nullable()->after('jenis_pembayaran');
+        });
     }
 
     public function down(): void

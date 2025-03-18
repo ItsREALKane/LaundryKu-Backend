@@ -11,8 +11,16 @@ class Pesanan extends Model
 
     protected $table = 'pesanan';
     protected $fillable = [
-        'id_user', 'id_laundry', 'tanggal_pesanan', 'status',
-        'total_harga', 'alamat', 'waktu_ambil', 'catatan'
+        'id_user',
+        'id_laundry',
+        'tanggal_pesanan',
+        'status',
+        'total_harga',
+        'alamat',
+        'waktu_ambil',
+        'catatan',
+        'jenis_pembayaran',
+        'tgl_langganan_berakhir'
     ];
 
     public function user()

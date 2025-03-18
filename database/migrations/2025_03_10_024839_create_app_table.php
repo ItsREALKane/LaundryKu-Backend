@@ -58,10 +58,13 @@ return new class extends Migration {
             $table->dateTime('tanggal_pesanan');
             $table->string('status');
             $table->decimal('total_harga', 10, 2);
+            $table->enum('jenis_pembayaran',['sekali','langganan']);
+            $table->date('tgl_langganan_berakhir')->nullable();
             $table->text('alamat');
             $table->time('waktu_ambil');
             $table->text('catatan')->nullable();
             $table->timestamps();
+
         });
 
         Schema::create('detail_pesanan', function (Blueprint $table) {
@@ -81,6 +84,17 @@ return new class extends Migration {
             $table->decimal('total_tagihan', 10, 2);
             $table->timestamps();
         });
+
+
+    Schema::table('pesanan', function (Blueprint $table) {
+        if (!Schema::hasColumn('pesanan', 'jenis_pembayaran')) {
+            $table->enum('jenis_pembayaran', ['sekali', 'langganan'])->after('total_harga');
+        }
+        if (!Schema::hasColumn('pesanan', 'tgl_langganan_berakhir')) {
+            $table->date('tgl_langganan_berakhir')->nullable()->after('jenis_pembayaran');
+        }
+    });
+
     }
 
     /**9
@@ -96,5 +110,9 @@ return new class extends Migration {
         Schema::dropIfExists('admins');
         Schema::dropIfExists('laundry');
         Schema::dropIfExists('users');
+
+        Schema::table('pesanan', function (Blueprint $table) {
+            $table->dropColumn(['jenis_pembayaran', 'tgl_langganan_berakhir']);
+        });
     }
 };
