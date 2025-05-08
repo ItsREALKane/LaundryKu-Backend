@@ -22,6 +22,7 @@ class LaundryController extends Controller
             'img' => 'required|string',
             'rating' => 'required|numeric|between:0,5',
             'jasa' => 'required|string',
+            'pengantaran' => 'required|string',
         ]);
 
         $laundry = Laundry::create($request->all());

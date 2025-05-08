@@ -25,14 +25,14 @@ class PesananController extends Controller
                 'alamat' => 'required|string',
                 'waktu_ambil' => 'required',
                 'catatan' => 'nullable|string',
-                'jenis_pembayaran' => 'required|in:sekali,langganan',
+                'jenis_pembayaran' => 'nullable|in:sekali,langganan',
                 'tgl_langganan_berakhir' => 'nullable|date|required_if:jenis_pembayaran,langganan',
             ]);
 
             $pesanan = Pesanan::create($request->all());
             return response()->json([
                 'status' => true,
-                'message' => 'Data pesanan berhasil ditampilkan',
+                'message' => 'Pesanan berhasil dibuat',
                 'data' => $pesanan
             ], 201);
         } catch (\Exception $e) {

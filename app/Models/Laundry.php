@@ -9,7 +9,7 @@ class Laundry extends Model
 {
     use HasFactory;
     protected $table = 'laundry'; // Pastikan sesuai dengan tabel di database
-    protected $fillable = ['nama', 'alamat', 'nomor', 'img', 'rating', 'jasa'];
+    protected $fillable = ['nama', 'alamat', 'nomor', 'img', 'rating', 'jasa', 'pengantaran'];
 
     public function admins()
     {
