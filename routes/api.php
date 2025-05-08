@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PesananController;
 use App\Http\Controllers\Api\TagihanController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\HargaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -66,5 +67,13 @@ Route::prefix('tagihan')->group(function () {
     Route::get('/{id}', [TagihanController::class, 'show']);
     Route::put('/{id}', [TagihanController::class, 'update']);
     Route::delete('/{id}', [TagihanController::class, 'destroy']);
+});
+
+Route::prefix('detailHarga')->group(function () {
+    Route::get('/', [HargaController::class, 'index']);
+    Route::post('/', [HargaController::class, 'store']);
+    Route::get('/{id}', [HargaController::class, 'show']);
+    Route::put('/{id}', [HargaController::class, 'update']);
+    Route::delete('/{id}', [HargaController::class, 'destroy']);
 });
 
