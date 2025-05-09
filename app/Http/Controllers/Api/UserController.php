@@ -26,6 +26,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string',
+            'img' => 'nullable|string',
         ]);
 
         $user = User::create([
@@ -33,6 +34,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone ?? null,
+            'img' => $request->img?? null,
         ]);
 
         return response()->json($user, 201);
@@ -46,7 +48,7 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->update($request->only(['name', 'email', 'phone']));
+        $user->update($request->only(['name', 'email', 'phone', 'img']));
 
         return response()->json($user, 200);
     }
