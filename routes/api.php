@@ -12,14 +12,6 @@ use App\Http\Controllers\FavoriteLaundryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [AuthController::class, 'getUser']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::put('/profile', [AuthController::class, 'updateProfile']);
-    Route::put('/change-password', [AuthController::class, 'changePassword']);
-});
-
 // Authentication Routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
