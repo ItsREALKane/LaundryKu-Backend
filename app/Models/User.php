@@ -23,4 +23,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tagihan::class, 'id_user');
     }
+
+    public function favoriteLaundry()
+    {
+        return $this->hasMany(FavoriteLaundry::class, 'id_user');
+    }
 }

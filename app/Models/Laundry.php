@@ -30,4 +30,8 @@ class Laundry extends Model
     {
         return $this->belongsToMany(Kategori::class, 'laundry_kategori', 'id_laundry', 'id_kategori');
     }
+    public function favoritedBy()
+    {
+        return $this->hasMany(FavoriteLaundry::class, 'id_laundry');
+    }
 }

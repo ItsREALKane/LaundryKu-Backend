@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PesananController;
 use App\Http\Controllers\Api\TagihanController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\HargaController;
+use App\Http\Controllers\FavoriteLaundryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -75,5 +76,11 @@ Route::prefix('detailHarga')->group(function () {
     Route::get('/{id}', [HargaController::class, 'show']);
     Route::put('/{id}', [HargaController::class, 'update']);
     Route::delete('/{id}', [HargaController::class, 'destroy']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/favorites', [FavoriteLaundryController::class, 'index']);
+    Route::post('/favorites', [FavoriteLaundryController::class, 'store']);
+    Route::delete('/favorites/{id}', [FavoriteLaundryController::class, 'destroy']);
 });
 
