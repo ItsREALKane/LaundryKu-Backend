@@ -25,6 +25,7 @@ class PesananController extends Controller
                 'alamat' => 'required|string',
                 'waktu_ambil' => 'required',
                 'catatan' => 'nullable|string',
+                'info_pesanan' => 'nullable|string',
                 'jenis_pembayaran' => 'nullable|in:sekali,langganan',
                 'tgl_langganan_berakhir' => 'nullable|date|required_if:jenis_pembayaran,langganan',
             ]);

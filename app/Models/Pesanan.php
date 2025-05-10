@@ -19,8 +19,9 @@ class Pesanan extends Model
         'alamat',
         'waktu_ambil',
         'catatan',
+        'info_pesanan',
         'jenis_pembayaran',
-        'tgl_langganan_berakhir'
+        'tgl_langganan_berakhir',
     ];
 
     public function user()
