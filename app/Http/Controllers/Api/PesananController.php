@@ -10,7 +10,8 @@ class PesananController extends Controller
 {
     public function index()
     {
-        return response()->json(Pesanan::all(), 200);
+        $pesanan = Pesanan::with('user:id,phone')->get();
+        return response()->json($pesanan, 200);
     }
 
     public function store(Request $request)
@@ -48,7 +49,8 @@ class PesananController extends Controller
 
     public function show($id)
     {
-        return response()->json(Pesanan::findOrFail($id), 200);
+        $pesanan = Pesanan::with('user:id,phone')->findOrFail($id);
+        return response()->json($pesanan, 200);
     }
 
     public function update(Request $request, $id)
