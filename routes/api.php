@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\PesananController;
 use App\Http\Controllers\Api\TagihanController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\HargaController;
-use App\Http\Controllers\FavoriteLaundryController;
+use App\Http\Controllers\Api\FavoriteLaundryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
