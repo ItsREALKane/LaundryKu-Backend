@@ -136,7 +136,7 @@ class AdminController extends Controller
         $admin = Admin::create([
             'name' => $request->name,
             'id_laundry' => $request->id_laundry,
-            'password' => bcrypt($request->password)
+            'password' => Hash::make($request->password)
         ]);
 
         return response()->json([
@@ -196,7 +196,7 @@ class AdminController extends Controller
         $admin->update([
             'name' => $request->name ?? $admin->name,
             'id_laundry' => $request->id_laundry ?? $admin->id_laundry,
-            'password' => $request->password ? bcrypt($request->password) : $admin->password
+            'password' => $request->password ? Hash::make($request->password) : $admin->password
         ]);
 
         return response()->json([
