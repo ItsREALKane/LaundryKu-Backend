@@ -6,10 +6,101 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Laundry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
+    /**
+     * Login admin using name and password
+     */
+    public function login(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string',
+                'password' => 'required|string|min:6'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $admin = Admin::with('laundry')->where('name', $request->name)->first();
+
+            if (!$admin || !Hash::check($request->password, $admin->password)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Name atanapi password lepat'
+                ], 401);
+            }
+
+            // Generate token for admin (assuming you have Sanctum set up for Admin model too)
+            $token = $admin->createToken('admin_auth_token')->plainTextToken;
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Login admin berhasil',
+                'token' => $token,
+                'admin' => $admin,
+                'admin_id' => $admin->id,
+                'laundry' => $admin->laundry
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kasalahan server',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Logout admin dan hapus token
+     */
+    public function logout(Request $request)
+    {
+        try {
+            $request->user()->currentAccessToken()->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Logout berhasil'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kasalahan server',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get current admin data
+     */
+    public function getAdmin(Request $request)
+    {
+        try {
+            $admin = $request->user()->load('laundry');
+            return response()->json([
+                'status' => true,
+                'message' => 'Data admin berhasil dicandak',
+                'data' => $admin
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kasalahan server',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
