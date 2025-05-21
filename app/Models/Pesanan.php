@@ -20,6 +20,7 @@ class Pesanan extends Model
         'waktu_ambil',
         'catatan',
         'info_pesanan',
+        'pengiriman',
         'jenis_pembayaran',
         'tgl_langganan_berakhir',
     ];

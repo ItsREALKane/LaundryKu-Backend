@@ -64,7 +64,7 @@ return new class extends Migration {
             $table->enum('jenis_pembayaran',['sekali','langganan']);
             $table->date('tgl_langganan_berakhir')->nullable();
             $table->text('alamat');
-            $table->time('waktu_ambil');
+            $table->time('waktu_ambil')->nullable();
             $table->text('catatan')->nullable();
             $table->timestamps();
 
