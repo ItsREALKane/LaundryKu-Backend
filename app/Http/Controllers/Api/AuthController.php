@@ -251,5 +251,14 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Nampilkeun form login
+     * @return \Illuminate\View\View
+     */
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
 }
 
