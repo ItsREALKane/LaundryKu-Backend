@@ -3,35 +3,27 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pesanan;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class PesananController extends Controller
+class KategoriController extends Controller
 {
     public function index(Request $request)
     {
         try {
-            $query = Pesanan::with(['user:id,name,phone', 'laundry:id,nama,alamat']);
+            $query = Kategori::with('laundries');
             
-            if ($request->has('id_laundry')) {
-                $query->where('id_laundry', $request->id_laundry);
+            if ($request->has('jenis_kategori')) {
+                $query->where('jenis_kategori', 'like', '%' . $request->jenis_kategori . '%');
             }
 
-            if ($request->has('status')) {
-                $query->where('status', $request->status);
-            }
-
-            if ($request->has('tanggal_mulai') && $request->has('tanggal_akhir')) {
-                $query->whereBetween('tanggal_pesanan', [$request->tanggal_mulai, $request->tanggal_akhir]);
-            }
-
-            $pesanan = $query->latest()->get();
+            $kategori = $query->get();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data pesanan berhasil diambil',
-                'data' => $pesanan
+                'message' => 'Data kategori berhasil diambil',
+                'data' => $kategori
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -46,26 +38,17 @@ class PesananController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'id_user' => 'required|exists:users,id',
-                'id_laundry' => 'required|exists:laundry,id',
-                'tanggal_pesanan' => 'required|date',
-                'status' => 'required|string|in:pending,proses,selesai,batal',
-                'total_harga' => 'required|numeric|min:0',
-                'alamat' => 'required|string|max:255',
-                'waktu_ambil' => 'nullable|date',
-                'catatan' => 'nullable|string|max:500',
-                'info_pesanan' => 'nullable|string|max:500',
-                'pengiriman' => 'nullable|string|in:pickup,delivery',
-                'jenis_pembayaran' => 'required|in:sekali,langganan',
-                'tgl_langganan_berakhir' => 'nullable|date|required_if:jenis_pembayaran,langganan|after:tanggal_pesanan',
+                'jenis_kategori' => 'required|string|max:100|unique:kategori,jenis_kategori',
+                'deskripsi' => 'nullable|string|max:500',
+                'icon' => 'nullable|string|max:50'
             ]);
 
-            $pesanan = Pesanan::create($validatedData);
-            
+            $kategori = Kategori::create($validatedData);
+
             return response()->json([
                 'status' => true,
-                'message' => 'Mantap! Pesanan geus dijieun',
-                'data' => $pesanan->load('user:id,name,phone')
+                'message' => 'Mantap! Kategori geus dijieun',
+                'data' => $kategori
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -85,18 +68,18 @@ class PesananController extends Controller
     public function show($id)
     {
         try {
-            $pesanan = Pesanan::with(['user:id,name,phone', 'laundry:id,nama,alamat', 'detailPesanan', 'tagihan'])
+            $kategori = Kategori::with('laundries')
                 ->findOrFail($id);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data pesanan berhasil diambil',
-                'data' => $pesanan
+                'message' => 'Data kategori berhasil diambil',
+                'data' => $kategori
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Pesanan teu kapanggih',
+                'message' => 'Waduh! Kategori teu kapanggih',
                 'error' => $e->getMessage()
             ], 404);
         }
@@ -105,22 +88,20 @@ class PesananController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $pesanan = Pesanan::findOrFail($id);
+            $kategori = Kategori::findOrFail($id);
 
             $validatedData = $request->validate([
-                'status' => 'sometimes|required|string|in:pending,proses,selesai,batal',
-                'total_harga' => 'sometimes|required|numeric|min:0',
-                'waktu_ambil' => 'nullable|date',
-                'catatan' => 'nullable|string|max:500',
-                'info_pesanan' => 'nullable|string|max:500',
+                'jenis_kategori' => 'sometimes|required|string|max:100|unique:kategori,jenis_kategori,' . $id,
+                'deskripsi' => 'nullable|string|max:500',
+                'icon' => 'nullable|string|max:50'
             ]);
 
-            $pesanan->update($validatedData);
+            $kategori->update($validatedData);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Mantap! Pesanan geus diupdate',
-                'data' => $pesanan->load('user:id,name,phone')
+                'message' => 'Mantap! Kategori geus diupdate',
+                'data' => $kategori
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
@@ -140,12 +121,21 @@ class PesananController extends Controller
     public function destroy($id)
     {
         try {
-            $pesanan = Pesanan::findOrFail($id);
-            $pesanan->delete();
+            $kategori = Kategori::findOrFail($id);
+            
+            // Cek heula aya laundry nu make kategori ieu teu
+            if ($kategori->laundries()->count() > 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Waduh! Kategori ieu masih dipake ku sababaraha laundry, teu bisa dihapus!'
+                ], 422);
+            }
+
+            $kategori->delete();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Mantap! Pesanan geus dihapus'
+                'message' => 'Mantap! Kategori geus dihapus'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
