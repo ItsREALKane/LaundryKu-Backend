@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->string('img')->nullable();
             $table->enum('role', ['user', 'admin'])->default('user');
             $table->timestamp('email_verified_at')->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
 
@@ -88,14 +89,7 @@ return new class extends Migration {
         });
 
 
-    Schema::table('pesanan', function (Blueprint $table) {
-        if (!Schema::hasColumn('pesanan', 'jenis_pembayaran')) {
-            $table->enum('jenis_pembayaran', ['sekali', 'langganan'])->after('total_harga');
-        }
-        if (!Schema::hasColumn('pesanan', 'tgl_langganan_berakhir')) {
-            $table->date('tgl_langganan_berakhir')->nullable()->after('jenis_pembayaran');
-        }
-    });
+
 
     }
 
