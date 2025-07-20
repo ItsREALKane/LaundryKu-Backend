@@ -47,6 +47,11 @@ class Laundry extends Model
     {
         return $this->hasMany(Pesanan::class, 'id_laundry');
     }
+    
+    public function owner()
+    {
+        return $this->belongsTo(Owner::class, 'nama', 'nama_laundry');
+    }
 
     public function tagihan()
     {

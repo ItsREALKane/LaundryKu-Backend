@@ -82,7 +82,6 @@ return new class extends Migration {
         Schema::create('tagihan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_user')->constrained('users')->onDelete('cascade');
-            $table->foreignId('id_laundry')->constrained('laundry')->onDelete('cascade');
             $table->foreignId('id_pesanan')->constrained('pesanan')->onDelete('cascade');
             $table->decimal('total_tagihan', 10, 2);
             $table->timestamps();

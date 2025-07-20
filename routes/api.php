@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LaundryController;
+use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PesananController;
 use App\Http\Controllers\Api\TagihanController;
@@ -18,6 +19,10 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Admin Authentication Routes
 Route::post('/admin/login', [AdminController::class, 'login']);
+
+// Owner Authentication Routes
+Route::post('/owner/register', [OwnerController::class, 'register']);
+Route::post('/owner/login', [OwnerController::class, 'login']);
 
 // Protected User Routes (requires auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
@@ -36,6 +41,15 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/logout', [AdminController::class, 'logout']);
     Route::get('/admin/me', [AdminController::class, 'getAdmin']);
+});
+
+// Protected Owner Routes (requires auth:sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/owner/logout', [OwnerController::class, 'logout']);
+    Route::get('/owner/profile', [OwnerController::class, 'profile']);
+    Route::put('/owner/profile', [OwnerController::class, 'updateProfile']);
+    Route::get('/owner/pesanan', [OwnerController::class, 'getPesanan']);
+    Route::get('/owner/dashboard-stats', [OwnerController::class, 'getDashboardStats']);
 });
 
 // Person Routes
@@ -87,4 +101,13 @@ Route::prefix('detailHarga')->group(function () {
     Route::get('/{id}', [HargaController::class, 'show']);
     Route::put('/{id}', [HargaController::class, 'update']);
     Route::delete('/{id}', [HargaController::class, 'destroy']);
+});
+
+// Owner CRUD Routes
+Route::prefix('owner')->group(function () {
+    Route::get('/', [OwnerController::class, 'index']);
+    Route::post('/', [OwnerController::class, 'store']);
+    Route::get('/{id}', [OwnerController::class, 'show']);
+    Route::put('/{id}', [OwnerController::class, 'update']);
+    Route::delete('/{id}', [OwnerController::class, 'destroy']);
 });

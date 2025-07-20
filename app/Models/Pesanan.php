@@ -12,7 +12,7 @@ class Pesanan extends Model
     protected $table = 'pesanan';
     protected $fillable = [
         'id_user',
-        'id_laundry',
+        'id_owner',
         'tanggal_pesanan',
         'status',
         'total_harga',
@@ -29,10 +29,10 @@ class Pesanan extends Model
     {
         return $this->belongsTo(User::class, 'id_user');
     }
-
-    public function laundry()
+    
+    public function owner()
     {
-        return $this->belongsTo(Laundry::class, 'id_laundry');
+        return $this->belongsTo(Owner::class, 'id_owner');
     }
 
     public function detailPesanan()
