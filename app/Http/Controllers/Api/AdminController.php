@@ -30,7 +30,7 @@ class AdminController extends Controller
                 ], 422);
             }
 
-            $admin = Admin::with(['laundry', 'owner'])->where('email', $request->email)->first();
+            $admin = Admin::with(['owner'])->where('email', $request->email)->first();
 
             if (!$admin || !Hash::check($request->password, $admin->password)) {
                 return response()->json([
@@ -47,7 +47,6 @@ class AdminController extends Controller
                 'token' => $token,
                 'admin' => $admin,
                 'admin_id' => $admin->id,
-                'laundry' => $admin->laundry,
                 'owner' => $admin->owner
             ], 200);
         } catch (\Exception $e) {
@@ -86,7 +85,7 @@ class AdminController extends Controller
     public function getAdmin(Request $request)
     {
         try {
-            $admin = $request->user()->load(['laundry', 'owner']);
+            $admin = $request->user()->load(['owner']);
             return response()->json([
                 'status' => true,
                 'message' => 'Data admin berhasil dicandak',
@@ -106,7 +105,7 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $admins = Admin::with(['laundry', 'owner'])->get();
+        $admins = Admin::with(['owner'])->get();
         return response()->json([
             'status' => true,
             'message' => 'List of admins',
@@ -122,7 +121,8 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:admins,email',
-            'id_laundry' => 'required|exists:laundry,id',
+            'nomor' => 'required|string',
+            'status' => 'required|string',
             'id_owner' => 'required|exists:owners,id',
             'password' => 'required|min:6'
         ]);
@@ -138,7 +138,8 @@ class AdminController extends Controller
         $admin = Admin::create([
             'name' => $request->name,
             'email' => $request->email,
-            'id_laundry' => $request->id_laundry,
+            'nomor' => $request->nomor,
+            'status' => $request->status,
             'id_owner' => $request->id_owner,
             'password' => Hash::make($request->password)
         ]);
@@ -146,7 +147,7 @@ class AdminController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Admin created successfully',
-            'data' => $admin->load(['laundry', 'owner'])
+            'data' => $admin->load(['owner'])
         ], 201);
     }
 
@@ -155,7 +156,7 @@ class AdminController extends Controller
      */
     public function show(string $id)
     {
-        $admin = Admin::with(['laundry', 'owner'])->find($id);
+        $admin = Admin::with(['owner'])->find($id);
         if (!$admin) {
             return response()->json([
                 'status' => false,
@@ -186,7 +187,8 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:admins,email,' . $id,
-            'id_laundry' => 'sometimes|exists:laundry,id',
+            'nomor' => 'sometimes|string',
+            'status' => 'sometimes|in:aktif,nonaktif',
             'id_owner' => 'sometimes|exists:owners,id',
             'password' => 'sometimes|min:6'
         ]);
@@ -202,7 +204,8 @@ class AdminController extends Controller
         $admin->update([
             'name' => $request->name ?? $admin->name,
             'email' => $request->email ?? $admin->email,
-            'id_laundry' => $request->id_laundry ?? $admin->id_laundry,
+            'nomor' => $request->nomor ?? $admin->nomor,
+            'status' => $request->status ?? $admin->status,
             'id_owner' => $request->id_owner ?? $admin->id_owner,
             'password' => $request->password ? Hash::make($request->password) : $admin->password
         ]);

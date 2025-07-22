@@ -38,10 +38,7 @@ class Laundry extends Model
         'pengantaran' => 'tidak'
     ];
 
-    public function admins()
-    {
-        return $this->hasMany(Admin::class, 'id_laundry');
-    }
+
 
     public function pesanan()
     {

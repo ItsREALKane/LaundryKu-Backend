@@ -10,10 +10,10 @@ class Admin extends Model
 {
     use HasApiTokens, HasFactory;
     protected $table = 'admins';
-    protected $fillable = ['name','id_laundry','password',];
+    protected $fillable = ['name','email','nomor','status','id_owner','password',];
 
-    public function laundry()
+    public function owner()
     {
-        return $this->belongsTo(Laundry::class, 'id_laundry');
+        return $this->belongsTo(Owner::class, 'id_owner');
     }
 }
