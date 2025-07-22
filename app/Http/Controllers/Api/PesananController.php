@@ -12,18 +12,11 @@ class PesananController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Pesanan::with(['user:id,name,phone', 'laundry:id,nama,alamat']);
-            
-            if ($request->has('id_laundry')) {
-                $query->where('id_laundry', $request->id_laundry);
-            }
+            $query = Pesanan::query();
+
 
             if ($request->has('status')) {
                 $query->where('status', $request->status);
-            }
-
-            if ($request->has('tanggal_mulai') && $request->has('tanggal_akhir')) {
-                $query->whereBetween('tanggal_pesanan', [$request->tanggal_mulai, $request->tanggal_akhir]);
             }
 
             $pesanan = $query->latest()->get();
@@ -36,7 +29,7 @@ class PesananController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Aya masalah, coba deui nya!',
+                'message' => 'Waduh! ada masalah, coba lagi!',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -46,25 +39,20 @@ class PesananController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'id_user' => 'required|exists:users,id',
-                'id_laundry' => 'required|exists:laundry,id',
-                'tanggal_pesanan' => 'required|date',
                 'status' => 'required|string|in:pending,proses,selesai,batal',
                 'total_harga' => 'required|numeric|min:0',
                 'alamat' => 'required|string|max:255',
-                'waktu_ambil' => 'nullable|date',
                 'catatan' => 'nullable|string|max:500',
-                'info_pesanan' => 'nullable|string|max:500',
-                'pengiriman' => 'nullable|string|in:pickup,delivery',
                 'jenis_pembayaran' => 'required|in:sekali,langganan',
-                'tgl_langganan_berakhir' => 'nullable|date|required_if:jenis_pembayaran,langganan|after:tanggal_pesanan',
+                'berat' => 'required|numeric|min:0',
+                'layanan' => 'required|string',
             ]);
 
             $pesanan = Pesanan::create($validatedData);
             
             return response()->json([
                 'status' => true,
-                'message' => 'Mantap! Pesanan geus dijieun',
+                'message' => 'Pesanan dibuat',
                 'data' => $pesanan->load('user:id,name,phone')
             ], 201);
         } catch (ValidationException $e) {
@@ -85,7 +73,7 @@ class PesananController extends Controller
     public function show($id)
     {
         try {
-            $pesanan = Pesanan::with(['user:id,name,phone', 'laundry:id,nama,alamat', 'detailPesanan', 'tagihan'])
+            $pesanan = Pesanan::with(['detailPesanan', 'tagihan'])
                 ->findOrFail($id);
 
             return response()->json([
@@ -110,9 +98,7 @@ class PesananController extends Controller
             $validatedData = $request->validate([
                 'status' => 'sometimes|required|string|in:pending,proses,selesai,batal',
                 'total_harga' => 'sometimes|required|numeric|min:0',
-                'waktu_ambil' => 'nullable|date',
                 'catatan' => 'nullable|string|max:500',
-                'info_pesanan' => 'nullable|string|max:500',
             ]);
 
             $pesanan->update($validatedData);
