@@ -11,37 +11,31 @@ class Pesanan extends Model
 
     protected $table = 'pesanan';
     protected $fillable = [
-        'id_user',
         'id_owner',
-        'tanggal_pesanan',
-        'status',
-        'total_harga',
+        'id_admin',
+        'nama_pelanggan',
+        'nomor',
         'alamat',
-        'waktu_ambil',
-        'catatan',
-        'info_pesanan',
-        'pengiriman',
+        'layanan',
+        'berat',
+        'jumlah_harga',
+        'status',
         'jenis_pembayaran',
-        'tgl_langganan_berakhir',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'id_user');
-    }
-    
+    /**
+     * Get the owner that owns the pesanan.
+     */
     public function owner()
     {
         return $this->belongsTo(Owner::class, 'id_owner');
     }
-
-    public function detailPesanan()
+    
+    /**
+     * Get the admin (owner) that created the pesanan.
+     */
+    public function admin()
     {
-        return $this->hasMany(DetailPesanan::class, 'id_pesanan');
-    }
-
-    public function tagihan()
-    {
-        return $this->hasOne(Tagihan::class, 'id_pesanan');
+        return $this->belongsTo(Owner::class, 'id_admin');
     }
 }

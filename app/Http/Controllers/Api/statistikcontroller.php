@@ -13,30 +13,30 @@ class StatistikController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$request->has('id_laundry')) {
+            if (!$request->has('id_owner')) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'ID Laundry teu kapanggih'
+                    'message' => 'ID Owner teu kapanggih'
                 ], 400);
             }
 
-            $id_laundry = $request->id_laundry;
+            $id_owner = $request->id_owner;
 
             // Total pendapatan
-            $total_pendapatan = Pesanan::where('id_laundry', $id_laundry)
+            $total_pendapatan = Pesanan::where('id_owner', $id_owner)
                 ->where('status', 'selesai')
                 ->sum('total_harga');
 
             // Total pesanan
-            $total_pesanan = Pesanan::where('id_laundry', $id_laundry)->count();
+            $total_pesanan = Pesanan::where('id_owner', $id_owner)->count();
 
             // Total pelanggan unik
-            $total_pelanggan = Pesanan::where('id_laundry', $id_laundry)
+            $total_pelanggan = Pesanan::where('id_owner', $id_owner)
                 ->distinct('id_user')
                 ->count('id_user');
 
             // Data pesanan per bulan
-            $pesanan_per_bulan = Pesanan::where('id_laundry', $id_laundry)
+            $pesanan_per_bulan = Pesanan::where('id_owner', $id_owner)
                 ->select(
                     DB::raw('DATE_FORMAT(tanggal_pesanan, "%M") as bulan'),
                     DB::raw('COUNT(*) as jumlah')
@@ -46,7 +46,7 @@ class StatistikController extends Controller
                 ->get();
 
             // Data pendapatan per bulan
-            $pendapatan_per_bulan = Pesanan::where('id_laundry', $id_laundry)
+            $pendapatan_per_bulan = Pesanan::where('id_owner', $id_owner)
                 ->where('status', 'selesai')
                 ->select(
                     DB::raw('DATE_FORMAT(tanggal_pesanan, "%M") as bulan'),

@@ -6,15 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Pesanan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class PesananController extends Controller
 {
     public function index(Request $request)
     {
         try {
-            $query = Pesanan::query();
+            $query = Pesanan::with(['owner', 'admin']);
 
+            // Filter by id_owner if provided
+            if ($request->has('id_owner')) {
+                $query->where('id_owner', $request->id_owner);
+            }
 
+            // Filter by status if provided
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
@@ -39,32 +45,43 @@ class PesananController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'status' => 'required|string|in:pending,proses,selesai,batal',
-                'total_harga' => 'required|numeric|min:0',
-                'alamat' => 'required|string|max:255',
-                'catatan' => 'nullable|string|max:500',
-                'jenis_pembayaran' => 'required|in:sekali,langganan',
-                'berat' => 'required|numeric|min:0',
-                'layanan' => 'required|string',
+                'id_owner' => 'required|exists:owners,id',
+                'id_admin' => 'nullable|exists:owners,id', // admin yang membuat pesanan
+                'nama_pelanggan' => 'required|string|max:255',
+                'nomor' => 'required|string|max:20',
+                'alamat' => 'required|string|max:500',
+                'layanan' => 'required|string|max:255',
+                'berat' => 'nullable|numeric|min:0',
+                'jumlah_harga' => 'nullable|numeric|min:0',
+                'status' => 'nullable|string|in:pending,diproses,selesai',
+                'jenis_pembayaran' => 'nullable|in:cash,transfer',
             ]);
-
+            
+            // Set default values
+            $validatedData['status'] = $validatedData['status'] ?? 'pending';
+            
+            // Jika id_admin tidak disediakan, gunakan id_owner sebagai admin
+            if (!isset($validatedData['id_admin'])) {
+                $validatedData['id_admin'] = $validatedData['id_owner'];
+            }
+            
             $pesanan = Pesanan::create($validatedData);
             
             return response()->json([
                 'status' => true,
-                'message' => 'Pesanan dibuat',
-                'data' => $pesanan->load('user:id,name,phone')
+                'message' => 'Pesanan berhasil dibuat',
+                'data' => $pesanan->load(['owner', 'admin'])
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Data nu dimasukkeun teu lengkap/salah',
+                'message' => 'Data yang dimasukkan tidak lengkap/salah!',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Aya masalah, coba deui nya!',
+                'message' => 'Ada masalah, coba lagi!',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -73,7 +90,7 @@ class PesananController extends Controller
     public function show($id)
     {
         try {
-            $pesanan = Pesanan::with(['detailPesanan', 'tagihan'])
+            $pesanan = Pesanan::with(['owner', 'admin'])
                 ->findOrFail($id);
 
             return response()->json([
@@ -84,7 +101,7 @@ class PesananController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Pesanan teu kapanggih',
+                'message' => 'Pesanan tidak ditemukan',
                 'error' => $e->getMessage()
             ], 404);
         }
@@ -96,28 +113,33 @@ class PesananController extends Controller
             $pesanan = Pesanan::findOrFail($id);
 
             $validatedData = $request->validate([
-                'status' => 'sometimes|required|string|in:pending,proses,selesai,batal',
-                'total_harga' => 'sometimes|required|numeric|min:0',
-                'catatan' => 'nullable|string|max:500',
+                'nama_pelanggan' => 'sometimes|required|string|max:255',
+                'nomor' => 'sometimes|required|string|max:20',
+                'alamat' => 'sometimes|required|string|max:500',
+                'layanan' => 'sometimes|required|string|max:255',
+                'berat' => 'sometimes|nullable|numeric|min:0',
+                'jumlah_harga' => 'sometimes|nullable|numeric|min:0',
+                'status' => 'sometimes|required|string|in:pending,diproses,selesai',
+                'jenis_pembayaran' => 'sometimes|nullable|in:cash,transfer',
             ]);
 
             $pesanan->update($validatedData);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Mantap! Pesanan geus diupdate',
-                'data' => $pesanan->load('user:id,name,phone')
+                'message' => 'Pesanan berhasil diupdate',
+                'data' => $pesanan->load(['owner', 'admin'])
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Data nu dimasukkeun teu lengkap/salah',
+                'message' => 'Data yang dimasukkan tidak lengkap/salah',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Aya masalah, coba deui nya!',
+                'message' => 'Ada masalah, coba lagi!',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -131,12 +153,12 @@ class PesananController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Mantap! Pesanan geus dihapus'
+                'message' => 'Pesanan berhasil dihapus'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Waduh! Aya masalah, coba deui nya!',
+                'message' => 'Ada masalah, coba lagi!',
                 'error' => $e->getMessage()
             ], 500);
         }

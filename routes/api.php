@@ -50,13 +50,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/owner/profile', [OwnerController::class, 'updateProfile']);
     Route::get('/owner/pesanan', [OwnerController::class, 'getPesanan']);
     Route::get('/owner/dashboard-stats', [OwnerController::class, 'getDashboardStats']);
+    
+    // Admin CRUD Routes (protected)
+    Route::resource('/admin', AdminController::class);
 });
 
 // Person Routes
 Route::resource('/person', PersonController::class);
-
-// Admin CRUD Routes
-Route::resource('/admin', AdminController::class);
 
 // User CRUD Routes
 Route::prefix('users')->group(function () {
