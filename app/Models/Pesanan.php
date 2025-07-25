@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Admin;
+use App\Models\Owner;
 
 class Pesanan extends Model
 {
@@ -32,10 +34,10 @@ class Pesanan extends Model
     }
     
     /**
-     * Get the admin (owner) that created the pesanan.
+     * Get the admin that created the pesanan.
      */
     public function admin()
     {
-        return $this->belongsTo(Owner::class, 'id_admin');
+        return $this->belongsTo(Admin::class, 'id_admin');
     }
 }

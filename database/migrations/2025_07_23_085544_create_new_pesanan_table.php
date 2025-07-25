@@ -25,7 +25,7 @@ return new class extends Migration
         Schema::create('pesanan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_owner')->constrained('owners')->onDelete('cascade');
-            $table->foreignId('id_admin')->nullable()->constrained('owners')->onDelete('set null'); // id_admin mengacu ke owner yang membuat akun
+            $table->foreignId('id_admin')->nullable()->constrained('admins')->onDelete('set null'); // id_admin mengacu ke admin yang membuat pesanan
             $table->string('nama_pelanggan');
             $table->string('nomor');
             $table->text('alamat');

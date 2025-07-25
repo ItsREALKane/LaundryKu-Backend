@@ -46,7 +46,7 @@ class PesananController extends Controller
         try {
             $validatedData = $request->validate([
                 'id_owner' => 'required|exists:owners,id',
-                'id_admin' => 'nullable|exists:owners,id', // admin yang membuat pesanan
+                'id_admin' => 'nullable|exists:admins,id', // admin yang membuat pesanan
                 'nama_pelanggan' => 'required|string|max:255',
                 'nomor' => 'required|string|max:20',
                 'alamat' => 'required|string|max:500',
@@ -60,10 +60,7 @@ class PesananController extends Controller
             // Set default values
             $validatedData['status'] = $validatedData['status'] ?? 'pending';
             
-            // Jika id_admin tidak disediakan, gunakan id_owner sebagai admin
-            if (!isset($validatedData['id_admin'])) {
-                $validatedData['id_admin'] = $validatedData['id_owner'];
-            }
+            // id_admin bisa null, tidak perlu diisi otomatis dengan id_owner
             
             $pesanan = Pesanan::create($validatedData);
             
