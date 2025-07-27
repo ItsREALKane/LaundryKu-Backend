@@ -53,6 +53,14 @@ class Owner extends Authenticatable
     {
         return $this->hasMany(DetailTagihan::class, 'id_owner');
     }
+    
+    /**
+     * Get the pengeluaran for the owner.
+     */
+    public function pengeluaran()
+    {
+        return $this->hasMany(Pengeluaran::class, 'id_owner');
+    }
 
     /**
      * Scope a query to only include active owners.

@@ -13,19 +13,24 @@ class PesananController extends Controller
     public function index(Request $request)
     {
         try {
+            \Log::info('Fetching pesanan with params:', $request->all());
+            
             $query = Pesanan::with(['owner', 'admin']);
 
             // Filter by id_owner if provided
             if ($request->has('id_owner')) {
+                \Log::info('Filtering by id_owner:', ['id_owner' => $request->id_owner]);
                 $query->where('id_owner', $request->id_owner);
             }
 
             // Filter by status if provided
             if ($request->has('status')) {
+                \Log::info('Filtering by status:', ['status' => $request->status]);
                 $query->where('status', $request->status);
             }
 
             $pesanan = $query->latest()->get();
+            \Log::info('Found pesanan:', ['count' => $pesanan->count()]);
 
             return response()->json([
                 'status' => true,
@@ -33,6 +38,11 @@ class PesananController extends Controller
                 'data' => $pesanan
             ], 200);
         } catch (\Exception $e) {
+            \Log::error('Error fetching pesanan:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'status' => false,
                 'message' => 'Waduh! ada masalah, coba lagi!',

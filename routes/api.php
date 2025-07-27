@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\HargaController;
 use App\Http\Controllers\Api\FavoriteLaundryController;
 use App\Http\Controllers\Api\PelangganController;
+use App\Http\Controllers\Api\PengeluaranController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/owner/profile', [OwnerController::class, 'updateProfile']);
     Route::get('/owner/pesanan', [OwnerController::class, 'getPesanan']);
     Route::get('/owner/dashboard-stats', [OwnerController::class, 'getDashboardStats']);
+    
+    // Pengeluaran Routes
+    Route::get('/pengeluaran', [PengeluaranController::class, 'index']);
+    Route::post('/pengeluaran', [PengeluaranController::class, 'store']);
+    Route::get('/pengeluaran/{id}', [PengeluaranController::class, 'show']);
+    Route::put('/pengeluaran/{id}', [PengeluaranController::class, 'update']);
+    Route::delete('/pengeluaran/{id}', [PengeluaranController::class, 'destroy']);
+    Route::get('/pengeluaran-kategori', [PengeluaranController::class, 'getKategori']);
+    
+    // Laporan Keuangan Routes
+    Route::get('/laporan-keuangan', [PengeluaranController::class, 'getLaporanBulanan']);
     
     // Admin CRUD Routes (protected)
     Route::resource('/admin', AdminController::class);
