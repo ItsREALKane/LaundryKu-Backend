@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Admin;
 use App\Models\Owner;
+use App\Models\DetailTagihan;
 
 class Pesanan extends Model
 {
     use HasFactory;
 
     protected $table = 'pesanan';
+    
     protected $fillable = [
         'id_owner',
         'id_admin',
@@ -23,6 +25,13 @@ class Pesanan extends Model
         'jumlah_harga',
         'status',
         'jenis_pembayaran',
+    ];
+
+    protected $casts = [
+        'berat' => 'decimal:2',
+        'jumlah_harga' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     /**
@@ -39,5 +48,29 @@ class Pesanan extends Model
     public function admin()
     {
         return $this->belongsTo(Admin::class, 'id_admin');
+    }
+
+    /**
+     * Get the detail tagihan for this pesanan.
+     */
+    public function detailTagihan()
+    {
+        return $this->hasOne(DetailTagihan::class, 'id_pesanan');
+    }
+
+    /**
+     * Scope a query to only include pesanan with status 'lunas'.
+     */
+    public function scopeLunas($query)
+    {
+        return $query->where('status', 'lunas');
+    }
+
+    /**
+     * Scope a query to only include pesanan with status not 'lunas'.
+     */
+    public function scopeBelumLunas($query)
+    {
+        return $query->where('status', '!=', 'lunas');
     }
 }

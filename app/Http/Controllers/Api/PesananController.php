@@ -53,12 +53,14 @@ class PesananController extends Controller
                 'layanan' => 'required|string|max:255',
                 'berat' => 'nullable|numeric|min:0',
                 'jumlah_harga' => 'nullable|numeric|min:0',
-                'status' => 'nullable|string|in:pending,diproses,selesai',
+                'status' => 'nullable|string|in:pending,diproses,selesai,lunas',
                 'jenis_pembayaran' => 'nullable|in:cash,transfer',
             ]);
             
             // Set default values
             $validatedData['status'] = $validatedData['status'] ?? 'pending';
+            
+            // Kode pengecekan nomor telepon unik dihapus agar bisa membuat pesanan dengan nomor yang sama
             
             // id_admin bisa null, tidak perlu diisi otomatis dengan id_owner
             
@@ -116,7 +118,7 @@ class PesananController extends Controller
                 'layanan' => 'sometimes|required|string|max:255',
                 'berat' => 'sometimes|nullable|numeric|min:0',
                 'jumlah_harga' => 'sometimes|nullable|numeric|min:0',
-                'status' => 'sometimes|required|string|in:pending,diproses,selesai',
+                'status' => 'sometimes|required|string|in:pending,diproses,selesai,lunas',
                 'jenis_pembayaran' => 'sometimes|nullable|in:cash,transfer',
             ]);
 

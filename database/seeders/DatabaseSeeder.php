@@ -19,5 +19,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+        
+        // Run the MigrateToDetailTagihanSeeder to migrate data from pesanan to detail_tagihan and tagihan
+        $this->call([
+            MigrateToDetailTagihanSeeder::class,
+        ]);
     }
 }

@@ -10,45 +10,38 @@ class Tagihan extends Model
     use HasFactory;
 
     protected $table = 'tagihan';
+    
     protected $fillable = [
-        'id_user',
-        'id_laundry',
-        'id_pesanan',
+        'nama_pelanggan',
+        'nomor',
+        'alamat',
+        'jumlah_pesanan',
         'total_tagihan',
-        'status_pembayaran',
-        'metode_pembayaran',
-        'bukti_pembayaran',
-        'catatan'
+        'id_owner'
     ];
 
     protected $casts = [
+        'jumlah_pesanan' => 'integer',
         'total_tagihan' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
 
-    public function user()
+    /**
+     * Get the owner that owns the tagihan.
+     */
+    public function owner()
     {
-        return $this->belongsTo(User::class, 'id_user');
+        return $this->belongsTo(Owner::class, 'id_owner');
     }
 
-    public function laundry()
+    /**
+     * Get the detail tagihan for this tagihan.
+     */
+    public function detailTagihan()
     {
-        return $this->belongsTo(Laundry::class, 'id_laundry');
-    }
-
-    public function pesanan()
-    {
-        return $this->belongsTo(Pesanan::class, 'id_pesanan');
-    }
-
-    public function getStatusPembayaranAttribute($value)
-    {
-        return $value ?: 'pending';
-    }
-
-    public function getMetodePembayaranAttribute($value)
-    {
-        return $value ?: 'cash';
+        return $this->hasMany(DetailTagihan::class, 'id_owner', 'id_owner')
+                    ->where('nama_pelanggan', $this->nama_pelanggan)
+                    ->where('status', '!=', 'lunas');
     }
 }

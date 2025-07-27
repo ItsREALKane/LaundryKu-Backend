@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\TagihanController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\HargaController;
 use App\Http\Controllers\Api\FavoriteLaundryController;
+use App\Http\Controllers\Api\PelangganController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
+Route::get('/tagihan/siap-ditagih', [TagihanController::class, 'getPesananSiapDitagih']);
+Route::get('/tagihan/belum-bayar', [TagihanController::class, 'belumBayar']);
 // Admin Authentication Routes
 Route::post('/admin/login', [AdminController::class, 'login']);
 
@@ -85,13 +88,22 @@ Route::prefix('pesanan')->group(function () {
     Route::delete('/{id}', [PesananController::class, 'destroy']);
 });
 
+// Pelanggan Routes
+Route::prefix('pelanggan')->group(function () {
+    Route::get('/', [PelangganController::class, 'index']);
+    Route::post('/find-by-nomor', [PelangganController::class, 'findByNomor']);
+});
+
 // Tagihan Routes
 Route::prefix('tagihan')->group(function () {
     Route::get('/', [TagihanController::class, 'index']);
     Route::post('/', [TagihanController::class, 'store']);
     Route::get('/{id}', [TagihanController::class, 'show']);
     Route::put('/{id}', [TagihanController::class, 'update']);
-    Route::delete('/{id}', [TagihanController::class, 'destroy']);
+    // Route::delete('/{id}', [TagihanController::class, 'destroy']);
+    // Route::get('/tagihan/siap-ditagih', [TagihanController::class, 'getPesananSiapDitagih']);
+    Route::apiResource('tagihan', TagihanController::class);
+    // Route::get('/tagihan/belum-bayar', [TagihanController::class, 'belumBayar']);
 });
 
 // Detail Harga Routes

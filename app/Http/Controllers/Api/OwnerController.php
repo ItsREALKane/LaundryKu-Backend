@@ -135,7 +135,7 @@ class OwnerController extends Controller
     {
         try {
             $owner = $request->user();
-            $owner->load(['pesanan.user', 'pesanan.detailPesanan', 'pesanan.tagihan']);
+            // $owner->load(['pesanan.user', 'pesanan.detailPesanan', 'pesanan.tagihan']);
             return response()->json([
                 'status' => true,
                 'message' => 'Data owner berhasil dicandak',
@@ -201,7 +201,8 @@ class OwnerController extends Controller
     public function index()
     {
         try {
-            $owners = Owner::with(['pesanan.user', 'pesanan.detailPesanan', 'pesanan.tagihan'])->get();
+            // $owners = Owner::with(['pesanan.user', 'pesanan.detailPesanan', 'pesanan.tagihan'])->get();
+                        $owners = Owner::all();
             return response()->json([
                 'status' => true,
                 'message' => 'Daftar owner berhasil diambil',
@@ -222,8 +223,8 @@ class OwnerController extends Controller
     public function show(string $id)
     {
         try {
-            $owner = Owner::with(['pesanan.user', 'pesanan.detailPesanan', 'pesanan.tagihan'])->find($id);
-
+            // $owner = Owner::with(['pesanan.user', 'pesanan.detailPesanan', 'pesanan.tagihan'])->find($id);
+            $owner = Owner::all();
             if (!$owner) {
                 return response()->json([
                     'status' => false,
