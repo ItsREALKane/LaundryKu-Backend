@@ -17,6 +17,7 @@ class Pesanan extends Model
     protected $fillable = [
         'id_owner',
         'id_admin',
+        'id_pelanggan',
         'nama_pelanggan',
         'nomor',
         'alamat',
@@ -48,6 +49,14 @@ class Pesanan extends Model
     public function admin()
     {
         return $this->belongsTo(Admin::class, 'id_admin');
+    }
+
+    /**
+     * Get the pelanggan for this pesanan.
+     */
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'id_pelanggan');
     }
 
     /**

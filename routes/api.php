@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LaundryController;
+use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\OwnerController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PesananController;
@@ -103,7 +104,20 @@ Route::prefix('pesanan')->group(function () {
 // Pelanggan Routes
 Route::prefix('pelanggan')->group(function () {
     Route::get('/', [PelangganController::class, 'index']);
-    Route::post('/find-by-nomor', [PelangganController::class, 'findByNomor']);
+    Route::post('/', [PelangganController::class, 'store']);
+    Route::get('/search', [PelangganController::class, 'search']);
+    Route::get('/{id}', [PelangganController::class, 'show']);
+    Route::put('/{id}', [PelangganController::class, 'update']);
+    Route::delete('/{id}', [PelangganController::class, 'destroy']);
+});
+
+// Layanan Routes
+Route::prefix('layanan')->group(function () {
+    Route::get('/', [LayananController::class, 'index']);
+    Route::post('/', [LayananController::class, 'store']);
+    Route::get('/{id}', [LayananController::class, 'show']);
+    Route::put('/{id}', [LayananController::class, 'update']);
+    Route::delete('/{id}', [LayananController::class, 'destroy']);
 });
 
 // Tagihan Routes

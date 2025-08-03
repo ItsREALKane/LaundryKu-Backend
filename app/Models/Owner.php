@@ -63,6 +63,14 @@ class Owner extends Authenticatable
     }
 
     /**
+     * Get the layanan for the owner.
+     */
+    public function layanan()
+    {
+        return $this->hasMany(Layanan::class, 'id_owner');
+    }
+
+    /**
      * Scope a query to only include active owners.
      */
     public function scopeActive($query)
