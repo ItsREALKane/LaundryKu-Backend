@@ -18,16 +18,21 @@ class PelangganController extends Controller
         try {
             $search = $request->query('search');
             $id_owner = $request->query('id_owner');
+            $adminId = $request->query('id_admin');
             
-            // Ambil data pelanggan dari tabel pesanan (data utama)
-            $query = Pesanan::select('nama_pelanggan', 'nomor', 'alamat')
-                ->where('nama_pelanggan', '!=', '')
-                ->where('nama_pelanggan', '!=', null)
-                ->where('nomor', '!=', '')
-                ->where('nomor', '!=', null);
+            // Ambil data pelanggan dari tabel pelanggan
+            $query = Pelanggan::with('owner:id,username,nama_laundry,email')
+                ->select('id', 'nama_pelanggan', 'nomor', 'alamat', 'id_owner', 'created_at', 'updated_at');
             
             if ($id_owner) {
                 $query->where('id_owner', $id_owner);
+            }
+            
+            // Filter berdasarkan admin jika ada
+            if ($adminId) {
+                $query->whereHas('owner.admins', function($q) use ($adminId) {
+                    $q->where('id', $adminId);
+                });
             }
             
             if ($search) {
@@ -37,8 +42,7 @@ class PelangganController extends Controller
                 });
             }
             
-            $pelanggan = $query->groupBy('nomor', 'nama_pelanggan', 'alamat')
-                ->orderBy('nama_pelanggan')
+            $pelanggan = $query->orderBy('nama_pelanggan')
                 ->get();
 
             return response()->json([
@@ -63,6 +67,7 @@ class PelangganController extends Controller
                 'nama_pelanggan' => 'required|string|max:255',
                 'nomor' => 'required|string|max:255',
                 'alamat' => 'required|string',
+                'id_owner' => 'required|exists:owners,id',
             ]);
 
             if ($validator->fails()) {
@@ -73,8 +78,10 @@ class PelangganController extends Controller
                 ], 422);
             }
 
-            // Cek apakah pelanggan sudah ada berdasarkan nomor
-            $existingPelanggan = Pelanggan::where('nomor', $request->nomor)->first();
+            // Cek apakah pelanggan sudah ada berdasarkan nomor dan owner
+            $existingPelanggan = Pelanggan::where('nomor', $request->nomor)
+                ->where('id_owner', $request->id_owner)
+                ->first();
             
             if ($existingPelanggan) {
                 return response()->json([
@@ -105,7 +112,7 @@ class PelangganController extends Controller
     public function show($id)
     {
         try {
-            $pelanggan = Pelanggan::with('pesanan')->find($id);
+            $pelanggan = Pelanggan::with(['pesanan', 'owner:id,username,nama_laundry,email'])->find($id);
 
             if (!$pelanggan) {
                 return response()->json([
@@ -145,6 +152,7 @@ class PelangganController extends Controller
                 'nama_pelanggan' => 'sometimes|required|string|max:255',
                 'nomor' => 'sometimes|required|string|max:255',
                 'alamat' => 'sometimes|required|string',
+                'id_owner' => 'sometimes|required|exists:owners,id',
             ]);
 
             if ($validator->fails()) {
@@ -155,9 +163,10 @@ class PelangganController extends Controller
                 ], 422);
             }
 
-            // Cek apakah nomor sudah digunakan oleh pelanggan lain
+            // Cek apakah nomor sudah digunakan oleh pelanggan lain dalam owner yang sama
             if ($request->has('nomor') && $request->nomor !== $pelanggan->nomor) {
                 $existingPelanggan = Pelanggan::where('nomor', $request->nomor)
+                    ->where('id_owner', $request->id_owner ?? $pelanggan->id_owner)
                     ->where('id', '!=', $id)
                     ->first();
                 
@@ -170,6 +179,9 @@ class PelangganController extends Controller
             }
 
             $pelanggan->update($request->all());
+
+            // Load relasi owner untuk response
+            $pelanggan->load('owner:id,username,nama_laundry,email');
 
             return response()->json([
                 'success' => true,
@@ -229,6 +241,7 @@ class PelangganController extends Controller
         try {
             $search = $request->query('q');
             $id_owner = $request->query('id_owner');
+            $adminId = $request->query('id_admin');
             
             if (!$search) {
                 return response()->json([
@@ -237,12 +250,9 @@ class PelangganController extends Controller
                 ], 400);
             }
 
-            // Cari pelanggan dari tabel pesanan
-            $query = Pesanan::select('nama_pelanggan', 'nomor', 'alamat')
-                ->where('nama_pelanggan', '!=', '')
-                ->where('nama_pelanggan', '!=', null)
-                ->where('nomor', '!=', '')
-                ->where('nomor', '!=', null)
+            // Cari pelanggan dari tabel pelanggan
+            $query = Pelanggan::with('owner:id,username,nama_laundry,email')
+                ->select('id', 'nama_pelanggan', 'nomor', 'alamat', 'id_owner', 'created_at', 'updated_at')
                 ->where(function($q) use ($search) {
                     $q->where('nama_pelanggan', 'like', "%{$search}%")
                       ->orWhere('nomor', 'like', "%{$search}%");
@@ -252,8 +262,50 @@ class PelangganController extends Controller
                 $query->where('id_owner', $id_owner);
             }
 
-            $pelanggan = $query->groupBy('nomor', 'nama_pelanggan', 'alamat')
-                ->orderBy('nama_pelanggan')
+            // Filter berdasarkan admin jika ada
+            if ($adminId) {
+                $query->whereHas('owner.admins', function($q) use ($adminId) {
+                    $q->where('id', $adminId);
+                });
+            }
+
+            $pelanggan = $query->orderBy('nama_pelanggan')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $pelanggan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get pelanggan by admin
+     */
+    public function getByAdmin(Request $request, $adminId)
+    {
+        try {
+            $search = $request->query('search');
+            
+            $query = Pelanggan::with('owner:id,username,nama_laundry,email')
+                ->select('id', 'nama_pelanggan', 'nomor', 'alamat', 'id_owner', 'created_at', 'updated_at')
+                ->whereHas('owner.admins', function($q) use ($adminId) {
+                    $q->where('id', $adminId);
+                });
+
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('nama_pelanggan', 'like', "%{$search}%")
+                      ->orWhere('nomor', 'like', "%{$search}%");
+                });
+            }
+
+            $pelanggan = $query->orderBy('nama_pelanggan')
                 ->get();
 
             return response()->json([

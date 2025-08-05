@@ -16,14 +16,34 @@ class LayananController extends Controller
     {
         try {
             $ownerId = $request->query('id_owner');
+            $adminId = $request->query('id_admin');
             
-            $query = Layanan::query();
+            $query = Layanan::query()
+                ->with(['owner:id,username,nama_laundry,email'])
+                ->select([
+                    'id',
+                    'nama_layanan',
+                    'harga_layanan',
+                    'keterangan_layanan',
+                    'waktu_pengerjaan',
+                    'id_owner',
+                    'created_at',
+                    'updated_at'
+                ]);
             
+            // Filter berdasarkan owner jika ada
             if ($ownerId) {
                 $query->where('id_owner', $ownerId);
             }
+            
+            // Filter berdasarkan admin jika ada
+            if ($adminId) {
+                $query->whereHas('owner.admins', function($q) use ($adminId) {
+                    $q->where('id', $adminId);
+                });
+            }
 
-            $layanan = $query->get();
+            $layanan = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
                 'success' => true,
@@ -47,7 +67,8 @@ class LayananController extends Controller
                 'nama_layanan' => 'required|string|max:255',
                 'harga_layanan' => 'required|string|max:255',
                 'keterangan_layanan' => 'required|string',
-                'id_owner' => 'required|exists:owners,id',
+                'waktu_pengerjaan' => 'nullable|integer|min:1',
+                'id_owner' => 'nullable|exists:owners,id',
             ]);
 
             if ($validator->fails()) {
@@ -59,6 +80,9 @@ class LayananController extends Controller
             }
 
             $layanan = Layanan::create($request->all());
+
+            // Load relasi owner untuk response
+            $layanan->load('owner:id,username,nama_laundry,email');
 
             return response()->json([
                 'success' => true,
@@ -79,7 +103,18 @@ class LayananController extends Controller
     public function show($id)
     {
         try {
-            $layanan = Layanan::find($id);
+            $layanan = Layanan::with(['owner:id,username,nama_laundry,email'])
+                ->select([
+                    'id',
+                    'nama_layanan',
+                    'harga_layanan',
+                    'keterangan_layanan',
+                    'waktu_pengerjaan',
+                    'id_owner',
+                    'created_at',
+                    'updated_at'
+                ])
+                ->find($id);
 
             if (!$layanan) {
                 return response()->json([
@@ -119,6 +154,8 @@ class LayananController extends Controller
                 'nama_layanan' => 'sometimes|required|string|max:255',
                 'harga_layanan' => 'sometimes|required|string|max:255',
                 'keterangan_layanan' => 'sometimes|required|string',
+                'waktu_pengerjaan' => 'sometimes|nullable|integer|min:1',
+                'id_owner' => 'sometimes|nullable|exists:owners,id',
             ]);
 
             if ($validator->fails()) {
@@ -130,6 +167,9 @@ class LayananController extends Controller
             }
 
             $layanan->update($request->all());
+
+            // Load relasi owner untuk response
+            $layanan->load('owner:id,username,nama_laundry,email');
 
             return response()->json([
                 'success' => true,
@@ -164,6 +204,93 @@ class LayananController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Layanan berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get layanan by admin
+     */
+    public function getByAdmin(Request $request, $adminId)
+    {
+        try {
+            $query = Layanan::query()
+                ->with(['owner:id,username,nama_laundry,email'])
+                ->select([
+                    'id',
+                    'nama_layanan',
+                    'harga_layanan',
+                    'keterangan_layanan',
+                    'waktu_pengerjaan',
+                    'id_owner',
+                    'created_at',
+                    'updated_at'
+                ])
+                ->whereHas('owner.admins', function($q) use ($adminId) {
+                    $q->where('id', $adminId);
+                });
+
+            $layanan = $query->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $layanan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get layanan statistics
+     */
+    public function getStats(Request $request)
+    {
+        try {
+            $ownerId = $request->query('id_owner');
+            $adminId = $request->query('id_admin');
+            
+            $query = Layanan::query();
+            
+            if ($ownerId) {
+                $query->where('id_owner', $ownerId);
+            }
+            
+            if ($adminId) {
+                $query->whereHas('owner.admins', function($q) use ($adminId) {
+                    $q->where('id', $adminId);
+                });
+            }
+
+            $totalLayanan = $query->count();
+            $layananTerbaru = $query->latest()->take(5)->get();
+            
+            // Statistik berdasarkan owner
+            $statsByOwner = $query->with('owner:id,username,nama_laundry')
+                ->get()
+                ->groupBy('id_owner')
+                ->map(function($layanan) {
+                    return [
+                        'owner' => $layanan->first()->owner,
+                        'jumlah_layanan' => $layanan->count()
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_layanan' => $totalLayanan,
+                    'layanan_terbaru' => $layananTerbaru,
+                    'stats_by_owner' => $statsByOwner
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([

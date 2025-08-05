@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/owner/profile', [OwnerController::class, 'updateProfile']);
     Route::get('/owner/pesanan', [OwnerController::class, 'getPesanan']);
     Route::get('/owner/dashboard-stats', [OwnerController::class, 'getDashboardStats']);
+    Route::get('/owner/pendapatan', [OwnerController::class, 'getPendapatan']);
     
     // Pengeluaran Routes
     Route::get('/pengeluaran', [PengeluaranController::class, 'index']);
@@ -96,6 +97,7 @@ Route::prefix('laundry')->group(function () {
 Route::prefix('pesanan')->group(function () {
     Route::get('/', [PesananController::class, 'index']);
     Route::post('/', [PesananController::class, 'store']);
+    Route::get('/layanan', [PesananController::class, 'getLayananByOwner']);
     Route::get('/{id}', [PesananController::class, 'show']);
     Route::put('/{id}', [PesananController::class, 'update']);
     Route::delete('/{id}', [PesananController::class, 'destroy']);
@@ -106,6 +108,7 @@ Route::prefix('pelanggan')->group(function () {
     Route::get('/', [PelangganController::class, 'index']);
     Route::post('/', [PelangganController::class, 'store']);
     Route::get('/search', [PelangganController::class, 'search']);
+    Route::get('/admin/{adminId}', [PelangganController::class, 'getByAdmin']);
     Route::get('/{id}', [PelangganController::class, 'show']);
     Route::put('/{id}', [PelangganController::class, 'update']);
     Route::delete('/{id}', [PelangganController::class, 'destroy']);
@@ -115,6 +118,8 @@ Route::prefix('pelanggan')->group(function () {
 Route::prefix('layanan')->group(function () {
     Route::get('/', [LayananController::class, 'index']);
     Route::post('/', [LayananController::class, 'store']);
+    Route::get('/stats', [LayananController::class, 'getStats']);
+    Route::get('/admin/{adminId}', [LayananController::class, 'getByAdmin']);
     Route::get('/{id}', [LayananController::class, 'show']);
     Route::put('/{id}', [LayananController::class, 'update']);
     Route::delete('/{id}', [LayananController::class, 'destroy']);

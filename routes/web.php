@@ -9,6 +9,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/test-xendit', function () {
+    return view('test-xendit-api');
+}); 
+
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

@@ -15,6 +15,7 @@ class Pelanggan extends Model
         'nama_pelanggan',
         'nomor',
         'alamat',
+        'id_owner',
     ];
 
     protected $casts = [
@@ -28,6 +29,14 @@ class Pelanggan extends Model
     public function pesanan()
     {
         return $this->hasMany(Pesanan::class, 'id_pelanggan');
+    }
+
+    /**
+     * Get the owner for this pelanggan.
+     */
+    public function owner()
+    {
+        return $this->belongsTo(Owner::class, 'id_owner');
     }
 
     /**

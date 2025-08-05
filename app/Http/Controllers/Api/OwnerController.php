@@ -466,4 +466,128 @@ class OwnerController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get pendapatan dengan filter per bulan dan per minggu
+     */
+    public function getPendapatan(Request $request)
+    {
+        try {
+            $owner = $request->user();
+            $filter = $request->get('filter', 'all'); // all, monthly, weekly
+            $year = $request->get('year', date('Y'));
+            $month = $request->get('month', date('m'));
+            $week = $request->get('week'); // 1-52
+
+            $query = $owner->pesanan()
+                ->where('status', 'lunas')
+                ->select('id', 'jumlah_harga', 'created_at');
+
+            // Filter berdasarkan periode
+            switch ($filter) {
+                case 'monthly':
+                    $query->whereYear('created_at', $year)
+                          ->whereMonth('created_at', $month);
+                    break;
+                    
+                case 'weekly':
+                    if ($week) {
+                        $startOfWeek = \Carbon\Carbon::now()->setISODate($year, $week)->startOfWeek();
+                        $endOfWeek = $startOfWeek->copy()->endOfWeek();
+                        $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                    } else {
+                        // Jika tidak ada week yang diinput, gunakan minggu ini
+                        $startOfWeek = \Carbon\Carbon::now()->startOfWeek();
+                        $endOfWeek = \Carbon\Carbon::now()->endOfWeek();
+                        $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                    }
+                    break;
+                    
+                case 'yearly':
+                    $query->whereYear('created_at', $year);
+                    break;
+                    
+                default:
+                    // Semua data
+                    break;
+            }
+
+            $pesananLunas = $query->get();
+            
+            // Hitung total pendapatan
+            $totalPendapatan = $pesananLunas->sum('jumlah_harga');
+            
+            // Hitung jumlah pesanan
+            $jumlahPesanan = $pesananLunas->count();
+            
+            // Data detail pesanan untuk breakdown
+            $detailPesanan = $pesananLunas->map(function($pesanan) {
+                return [
+                    'id' => $pesanan->id,
+                    'jumlah_harga' => $pesanan->jumlah_harga,
+                    'tanggal' => $pesanan->created_at->format('Y-m-d'),
+                    'hari' => $pesanan->created_at->format('l'),
+                ];
+            });
+
+            // Jika filter monthly, tambahkan data per hari dalam bulan
+            $pendapatanPerHari = [];
+            if ($filter === 'monthly') {
+                $daysInMonth = \Carbon\Carbon::create($year, $month)->daysInMonth;
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $date = \Carbon\Carbon::create($year, $month, $day)->format('Y-m-d');
+                    $pendapatanHari = $pesananLunas->filter(function($pesanan) use ($date) {
+                        return $pesanan->created_at->format('Y-m-d') === $date;
+                    })->sum('jumlah_harga');
+                    
+                    $pendapatanPerHari[] = [
+                        'tanggal' => $date,
+                        'pendapatan' => $pendapatanHari
+                    ];
+                }
+            }
+
+            // Jika filter weekly, tambahkan data per hari dalam minggu
+            $pendapatanPerHariMinggu = [];
+            if ($filter === 'weekly') {
+                $startOfWeek = $week ? \Carbon\Carbon::now()->setISODate($year, $week)->startOfWeek() : \Carbon\Carbon::now()->startOfWeek();
+                for ($day = 0; $day < 7; $day++) {
+                    $date = $startOfWeek->copy()->addDays($day)->format('Y-m-d');
+                    $pendapatanHari = $pesananLunas->filter(function($pesanan) use ($date) {
+                        return $pesanan->created_at->format('Y-m-d') === $date;
+                    })->sum('jumlah_harga');
+                    
+                    $pendapatanPerHariMinggu[] = [
+                        'tanggal' => $date,
+                        'hari' => $startOfWeek->copy()->addDays($day)->format('l'),
+                        'pendapatan' => $pendapatanHari
+                    ];
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data pendapatan berhasil diambil',
+                'data' => [
+                    'filter' => $filter,
+                    'periode' => [
+                        'tahun' => $year,
+                        'bulan' => $filter === 'monthly' ? $month : null,
+                        'minggu' => $filter === 'weekly' ? $week : null,
+                    ],
+                    'total_pendapatan' => $totalPendapatan,
+                    'jumlah_pesanan' => $jumlahPesanan,
+                    'rata_rata_per_pesanan' => $jumlahPesanan > 0 ? round($totalPendapatan / $jumlahPesanan, 2) : 0,
+                    'detail_pesanan' => $detailPesanan,
+                    'pendapatan_per_hari' => $filter === 'monthly' ? $pendapatanPerHari : ($filter === 'weekly' ? $pendapatanPerHariMinggu : null),
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data pendapatan',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

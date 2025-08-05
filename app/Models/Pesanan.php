@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Admin;
 use App\Models\Owner;
 use App\Models\DetailTagihan;
+use App\Models\Layanan;
 
 class Pesanan extends Model
 {
@@ -18,6 +19,7 @@ class Pesanan extends Model
         'id_owner',
         'id_admin',
         'id_pelanggan',
+        'id_layanan',
         'nama_pelanggan',
         'nomor',
         'alamat',
@@ -57,6 +59,14 @@ class Pesanan extends Model
     public function pelanggan()
     {
         return $this->belongsTo(Pelanggan::class, 'id_pelanggan');
+    }
+
+    /**
+     * Get the layanan for this pesanan.
+     */
+    public function layanan()
+    {
+        return $this->belongsTo(Layanan::class, 'id_layanan');
     }
 
     /**

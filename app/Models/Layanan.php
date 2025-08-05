@@ -15,27 +15,24 @@ class Layanan extends Model
         'nama_layanan',
         'harga_layanan',
         'keterangan_layanan',
-        'id_owner',
+        'waktu_pengerjaan',
+        'id_owner'
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'waktu_pengerjaan' => 'integer', // dalam jam
     ];
 
-    /**
-     * Get the owner that owns the layanan.
-     */
     public function owner()
     {
         return $this->belongsTo(Owner::class, 'id_owner');
     }
 
     /**
-     * Get the pesanan that use this layanan.
+     * Get the pesanan for this layanan.
      */
     public function pesanan()
     {
-        return $this->hasMany(Pesanan::class, 'layanan', 'nama_layanan');
+        return $this->hasMany(Pesanan::class, 'id_layanan');
     }
-}
+} 

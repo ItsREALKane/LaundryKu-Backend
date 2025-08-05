@@ -18,6 +18,8 @@ class AdminController extends Controller
     public function login(Request $request)
     {
         try {
+            Log::info('Admin login attempt', ['email' => $request->email]);
+            
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
                 'password' => 'required|string|min:6'
@@ -34,11 +36,19 @@ class AdminController extends Controller
             $admin = Admin::with(['owner'])->where('email', $request->email)->first();
 
             if (!$admin || !Hash::check($request->password, $admin->password)) {
+                Log::warning('Admin login failed: invalid credentials', ['email' => $request->email]);
                 return response()->json([
                     'status' => false,
                     'message' => 'Email atau password salah'
                 ], 401);
             }
+
+            Log::info('Admin login successful', [
+                'admin_id' => $admin->id,
+                'admin_email' => $admin->email,
+                'id_owner' => $admin->id_owner,
+                'owner_data' => $admin->owner
+            ]);
 
             $token = $admin->createToken('admin_auth_token')->plainTextToken;
 
@@ -51,6 +61,10 @@ class AdminController extends Controller
                 'owner' => $admin->owner
             ], 200);
         } catch (\Exception $e) {
+            Log::error('Admin login error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'status' => false,
                 'message' => 'Kasalahan server',
