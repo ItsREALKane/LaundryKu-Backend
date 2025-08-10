@@ -15,6 +15,7 @@ class Layanan extends Model
         'nama_layanan',
         'harga_layanan',
         'keterangan_layanan',
+        'tipe',
         'waktu_pengerjaan',
         'id_owner'
     ];

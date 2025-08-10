@@ -91,6 +91,7 @@ class PesananController extends Controller
                 'id_layanan' => 'required|exists:layanan,id',
                 'layanan' => 'nullable|string|max:255', // Sekarang optional karena akan diambil dari tabel layanan
                 'berat' => 'nullable|numeric|min:0',
+                'banyak_satuan' => 'nullable|numeric|min:0',
                 'jumlah_harga' => 'nullable|numeric|min:0',
                 'status' => 'nullable|string|in:pending,diproses,selesai,lunas',
                 'jenis_pembayaran' => 'nullable|in:cash,transfer',
@@ -215,6 +216,7 @@ class PesananController extends Controller
                 'id_layanan' => 'sometimes|exists:layanan,id',
                 'layanan' => 'sometimes|string|max:255',
                 'berat' => 'sometimes|nullable|numeric|min:0',
+                'banyak_satuan' => 'sometimes|nullable|numeric|min:0',
                 'jumlah_harga' => 'sometimes|nullable|numeric|min:0',
                 'status' => 'sometimes|required|string|in:pending,diproses,selesai,lunas',
                 'jenis_pembayaran' => 'sometimes|nullable|in:cash,transfer',
@@ -295,7 +297,7 @@ class PesananController extends Controller
             }
 
             $layanan = \App\Models\Layanan::where('id_owner', $ownerId)
-                ->select('id', 'nama_layanan', 'harga_layanan', 'keterangan_layanan', 'waktu_pengerjaan')
+                ->select('id', 'nama_layanan', 'harga_layanan', 'keterangan_layanan', 'tipe', 'waktu_pengerjaan')
                 ->orderBy('nama_layanan')
                 ->get();
 

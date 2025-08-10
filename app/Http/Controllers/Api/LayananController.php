@@ -25,6 +25,7 @@ class LayananController extends Controller
                     'nama_layanan',
                     'harga_layanan',
                     'keterangan_layanan',
+                    'tipe',
                     'waktu_pengerjaan',
                     'id_owner',
                     'created_at',
@@ -67,6 +68,7 @@ class LayananController extends Controller
                 'nama_layanan' => 'required|string|max:255',
                 'harga_layanan' => 'required|string|max:255',
                 'keterangan_layanan' => 'required|string',
+                'tipe' => 'required|in:Kiloan,Satuan',
                 'waktu_pengerjaan' => 'nullable|integer|min:1',
                 'id_owner' => 'nullable|exists:owners,id',
             ]);
@@ -109,6 +111,7 @@ class LayananController extends Controller
                     'nama_layanan',
                     'harga_layanan',
                     'keterangan_layanan',
+                    'tipe',
                     'waktu_pengerjaan',
                     'id_owner',
                     'created_at',
@@ -154,6 +157,7 @@ class LayananController extends Controller
                 'nama_layanan' => 'sometimes|required|string|max:255',
                 'harga_layanan' => 'sometimes|required|string|max:255',
                 'keterangan_layanan' => 'sometimes|required|string',
+                'tipe' => 'sometimes|required|in:Kiloan,Satuan',
                 'waktu_pengerjaan' => 'sometimes|nullable|integer|min:1',
                 'id_owner' => 'sometimes|nullable|exists:owners,id',
             ]);
@@ -226,6 +230,7 @@ class LayananController extends Controller
                     'nama_layanan',
                     'harga_layanan',
                     'keterangan_layanan',
+                    'tipe',
                     'waktu_pengerjaan',
                     'id_owner',
                     'created_at',
@@ -291,6 +296,64 @@ class LayananController extends Controller
                     'layanan_terbaru' => $layananTerbaru,
                     'stats_by_owner' => $statsByOwner
                 ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get layanan by tipe
+     */
+    public function getByTipe(Request $request)
+    {
+        try {
+            $tipe = $request->query('tipe');
+            $ownerId = $request->query('id_owner');
+            $adminId = $request->query('id_admin');
+            
+            if (!$tipe || !in_array($tipe, ['Kiloan', 'Satuan'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tipe harus diisi dengan "Kiloan" atau "Satuan"'
+                ], 400);
+            }
+            
+            $query = Layanan::query()
+                ->with(['owner:id,username,nama_laundry,email'])
+                ->select([
+                    'id',
+                    'nama_layanan',
+                    'harga_layanan',
+                    'keterangan_layanan',
+                    'tipe',
+                    'waktu_pengerjaan',
+                    'id_owner',
+                    'created_at',
+                    'updated_at'
+                ])
+                ->where('tipe', $tipe);
+            
+            // Filter berdasarkan owner jika ada
+            if ($ownerId) {
+                $query->where('id_owner', $ownerId);
+            }
+            
+            // Filter berdasarkan admin jika ada
+            if ($adminId) {
+                $query->whereHas('owner.admins', function($q) use ($adminId) {
+                    $q->where('id', $adminId);
+                });
+            }
+
+            $layanan = $query->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $layanan
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -119,6 +119,7 @@ Route::prefix('layanan')->group(function () {
     Route::get('/', [LayananController::class, 'index']);
     Route::post('/', [LayananController::class, 'store']);
     Route::get('/stats', [LayananController::class, 'getStats']);
+    Route::get('/by-tipe', [LayananController::class, 'getByTipe']);
     Route::get('/admin/{adminId}', [LayananController::class, 'getByAdmin']);
     Route::get('/{id}', [LayananController::class, 'show']);
     Route::put('/{id}', [LayananController::class, 'update']);

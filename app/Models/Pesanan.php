@@ -25,6 +25,7 @@ class Pesanan extends Model
         'alamat',
         'layanan',
         'berat',
+        'banyak_satuan',
         'jumlah_harga',
         'status',
         'jenis_pembayaran',
@@ -32,6 +33,7 @@ class Pesanan extends Model
 
     protected $casts = [
         'berat' => 'decimal:2',
+        'banyak_satuan' => 'integer',
         'jumlah_harga' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
