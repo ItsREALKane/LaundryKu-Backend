@@ -22,8 +22,8 @@ class Pengeluaran extends Model
     protected $casts = [
         'jumlah' => 'decimal:2',
         'tanggal' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s'
     ];
 
     /**

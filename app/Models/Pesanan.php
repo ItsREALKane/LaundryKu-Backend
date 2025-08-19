@@ -35,8 +35,8 @@ class Pesanan extends Model
         'berat' => 'decimal:2',
         'banyak_satuan' => 'integer',
         'jumlah_harga' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s'
     ];
 
     /**
